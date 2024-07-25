@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>Book Quote App</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="#" onclick="checkAuthAndShow('books')">ᗷöᑕKEᖇ</a></li>
+            <li><a href="#" onclick="checkAuthAndShow('quotes')">𝙢𝙞𝙣𝙖 𝙙𝙞𝙠𝙩𝙚𝙧</a></li>
+            <li><a href="#" onclick="showSection('login')">𝙡𝙤𝙜𝙜𝙖 𝙞𝙣</a></li>
+        </ul>
+    </nav>
+    <main>
+        <article id="books" class="hidden">
+            <h1>๖໐໐k liŞt</h1>
+            <button id="addBookBtn">Lägg till böcker</button>
+            <div id="bookForm" class="hidden">
+                <input type="text" id="title" placeholder="Title">
+                <input type="text" id="author" placeholder="Author">
+                <input type="date" id="pubDate">
+                <button id="saveBookBtn">Spara</button>
+                <button id="cancelBtn">Avbryt</button>
+            </div>
+            <ul id="bookList"></ul>
+        </article>
+        <article id="quotes" class="hidden">
+            <h1>му qυσтєѕ</h1>
+            <ul id="quoteList">
+                <li>
+                    <details>
+                        <summary>Aristotle</summary>
+                        <p>Educating the mind without educating the heart is no education at all</p>
+                    </details>
+                </li>
+                <li>
+                    <details>
+                        <summary>Friedrich Nietzsche</summary>
+                        <p>He who has a why to live can bear almost any how</p>
+                    </details>
+                </li>
+                <li>
+                    <details>
+                        <summary>Immanuel Kant</summary>
+                        <p>Live your life as though your every act were to become a universal law</p>
+                    </details>
+                </li>
+                <li>
+                    <details>
+                        <summary>Søren Kierkegaard:</summary>
+                        <p>Life can only be understood backwards; but it must be lived forwards</p>
+                    </details>
+                </li>
+                <li>
+                    <details>
+                        <summary>Lao Tzu</summary>
+                        <p>Being deeply loved by someone gives you strength, while loving someone deeply gives you courage</p>
+                    </details>
+                </li>
+  
+            </ul>
+        </article>
+        <article id="login" class="hidden">
+            <div class="logo">
+                <h1>ᒪOGIᑎ</h1>
+                <i class="fa-solid fa-lock" id="lock"></i>
+            </div>
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button id="loginBtn">𝕝𝕠𝕘𝕚𝕟</button><br>
+            <button onclick="logout()" class="out">ᒪOGOᑌT</button>
+            <p style="color: silver;"><em style="color: white;">Note: </em>𝘠𝘰𝘶'𝘳𝘦 𝘪𝘯𝘴𝘪𝘥𝘦 𝘵𝘩𝘦 𝘱𝘳𝘰𝘨𝘳𝘢𝘮 𝘶𝘯𝘵𝘪𝘭𝘭 𝘺𝘰𝘶 𝘭𝘰𝘨 𝘖𝘶𝘵!</p>
+        </article>
+        <p id="out"></p>
+    </main>
+    <div class="footer">
+        &copy; 2024 karimi74.se
+    </div>
+    <script src="scripts/app.js"></script>
+    <script src="scripts/books.js"></script>
+    <script src="scripts/quotes.js"></script>
+    <script src="scripts/auth.js"></script>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => { // Väntar tills att sidan klar laddas
+            if (localStorage.getItem('token') && localStorage.getItem('username')) { // kontrollerar om token och username existerar
+                showSection('books'); // visa bok delen
+                renderBooks(); // renderBooks för vidare funktion
+                alert('Välkommen tillbaks, ' + localStorage.getItem('username') + '!'); // VIsa på skärmen 
+            } else { // annars
+                showSection('login'); // visa login delen
+            }
+            document.getElementById('addBookBtn').addEventListener('click', toggleBookForm); // läggar till addEventL för toggleBookForm
+            document.getElementById('saveBookBtn').addEventListener('click', saveBook); // en event till sparaBöcker
+            document.getElementById('cancelBtn').addEventListener('click', toggleBookForm); // event för att undiva bookForm
+            document.getElementById('loginBtn').addEventListener('click', loginUser); // event för att login knappen
+        });
+
+        function showSection(article) { // funktion för att visa den specifika delen och gömma resten.....
+            document.querySelectorAll('main article').forEach(art => { // loopa genom alla article
+                art.classList.add('hidden'); // lägger till en class för att undiva article
+            });
+            document.getElementById(article).classList.remove('hidden'); // tabort nya classen för att visa den specifika article
+        }
+
+        function checkAuthAndShow(article) { // Funktion för att testa autentisering 
+            if (localStorage.getItem('token')) { // kontrollerar om token finns i Storage
+                showSection(article); // Visa den specifika article
+                if (article === 'books') { // om den delen är books
+                    renderBooks(); // render den listan av boken
+                }
+            } else { // om inte autentiserad
+                alert("Please log in to access this section."); // skicka meddelande
+                showSection('login'); // Visa login delen
+            }
+        }
+
+        function loginUser() { // Här har jag en funktion for latt logga in användare
+            var username = document.getElementById('username').value; // få upp användarnamn ifrån input
+            var password = document.getElementById('password').value; // få upp lösenord ifrån input
+            var success = document.getElementById('out'); // här får jag upp element för mina meddelande 
+
+            if (!username || !password) { // om användarnmanet och lös är töm
+                alert('Please enter both username and password.'); // Meddela användare för att skriva båda
+                return; // ut ur funktion
+            } else if (!/\d/.test(username)) { // kontrollerar om användarnamnet innehåller minst ett nummer
+                alert('Username must contain at least one number.'); // Meedelande till användare
+                document.getElementById('username').value = ""; // rensa bort användar värde
+                return; // ut ur funktion
+            } else if (!/^[A-Z]/.test(password)) { // kontrollerar om lös startas med en stor bokstav
+                alert('Password must start with a capital letter.'); // Meddela
+                document.getElementById('password').value = ""; // rensar bort lös
+                return; // ut ur funktion
+            } else { // om validation godkännas
+                alert("You're now Logged in!"); // meddela om lyckad!!
+
+                var lock = document.getElementById('lock'); // få upp lås ikonen
+                lock.classList.remove('fa-lock'); // bort denn class för ikonen
+                lock.classList.add('fa-unlock-keyhole'); // lägger till ikonen för att byta ikonen
+                lock.style.color = 'springgreen'; // bytar färget på ikonen
+            }
+
+            localStorage.setItem('token', 'logged_in'); // här sparar jag token in i localStorage
+            localStorage.setItem('username', username); // här sparar jag användarnamn in i localStorage
+            showSection('books'); // Visa bokens sektion
+            renderBooks(); // render listen av boken
+        }
+
+        function logout() { // funktion för att logga ut 
+            localStorage.removeItem('token'); // rensar bort token från Storage
+            localStorage.removeItem('username'); // rensar bort användarnamn från Storage
+            showSection('login'); // Visa den logga in sektion
+
+            var loggedOut = document.getElementById('out'); // få upp output element för meddelande
+            loggedOut.textContent = "You're now logged out!"; // sätta meddelande för logga ut
+            loggedOut.style.color = "yellow"; // byt meddelande färg
+            loggedOut.style.textAlign = "center"; // text align to center
+
+            setTimeout(function() { // sätter redirect för att ha delay i funktion
+                window.location.href = "index.html"; // Redirect to the index page
+            }, 1500); // en delay av 1500 miliSec
+        }
+
+        var books = JSON.parse(localStorage.getItem('books')) || []; // Initiera böcker array från localStorage eller som en tom array
+        let editingBookIndex = null; // Initiera redigerande bokindex
+
+        function renderBooks() { // Funktion för att rendera listan av böcker
+            var bookList = document.getElementById('bookList'); // Hämta boklistans element
+            bookList.innerHTML = ''; // rensa bok listen
+            books.forEach((book, index) => { // loopa genom varje bok
+                var li = document.createElement('li'); // Skapa ett nytt listelement
+                li.innerHTML = `
+                    <span class="thisList">${book.title} by ${book.author} (publicerad: ${book.pubDate})</span>
+                    <button onclick="redigeraBöcker(${index})">Redigera</button>
+                    <button onclick="taBortBöcker(${index})">Ta bort</button>
+                `; // Sätt den inre HTML med bokdetaljer och åtgärdsknappar
+                bookList.appendChild(li); // Foga listelementet till boklistan
+            });
+        }
+
+        function toggleBookForm() { // funktion för att växla synligheten av bokformuläret
+            document.getElementById('bookForm').classList.toggle('hidden'); // Växla 'hidden'-klassen på bokformuläret
+        }
+
+        function saveBook() { // funktion för att spara böcker
+            var title = document.getElementById('title').value; // Hämta titeln från inmatningsfältet
+            var author = document.getElementById('author').value; // Hämta författare från inmatningsfältet
+            var pubDate = document.getElementById('pubDate').value; // Hämta publicerade datum från inmatningsfältet
+
+            if (editingBookIndex !== null) { // Kontrollera om du redigerar en befintlig bok
+                books[editingBookIndex] = { title, author, pubDate }; // updatera bokens detaljer
+                editingBookIndex = null; // Återställ indexet för redigering av bok
+            } else { // om läggs en ny bok
+                books.push({ title, author, pubDate }); // lägga till boken i array listen
+            }
+
+            localStorage.setItem('books', JSON.stringify(books)); //spara uppdaterade bokens array till localStorage
+            toggleBookForm(); // undvik bok form
+            renderBooks(); // Rendera den uppdaterade boklistan
+        }
+
+        function redigeraBöcker(index) { // funktion för att redigera boken
+            editingBookIndex = index; // Sätt indexet för redigering av bok
+            var book = books[index]; // få upp bok detaljer
+            document.getElementById('title').value = book.title; // Sätt in bokens titel i inmatningsfältet för titel
+            document.getElementById('author').value = book.author; // Sätt in bokens författare i inmatningsfältet för author
+            document.getElementById('pubDate').value = book.pubDate; // Sätt in bokutgivningsdatumet i inmatningsfältet för utgivningsdatum
+            toggleBookForm(); // Visa bok formen
+        }
+
+        function taBortBöcker(index) { // funktion för att radera boken
+            books.splice(index, 1); // rensa boken från array listen
+            localStorage.setItem('books', JSON.stringify(books)); // Spara den uppdaterade bokarrayen i localStorage
+            renderBooks(); // Rendera den uppdaterade listan över böcker
+        }
+
+        
+    </script>
+</body>
+</html>
